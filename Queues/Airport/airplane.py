@@ -7,6 +7,7 @@ class Airplane:
         self.passengers = 0
         self.airTime = 0
         self.groundTime = 0
+        self.isGrounded = False
 
     def setAirline(self, air):
         self.airline = air
@@ -43,3 +44,9 @@ class Airplane:
 
     def getGroundtime(self):
         return self.groundTime
+
+    def setIsGrounded(self, x):
+        self.isGrounded = x
+
+    def getIsGrounded(self):
+        return self.isGrounded

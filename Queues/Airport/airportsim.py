@@ -5,7 +5,8 @@ import random as rand
 airplanes = ["MD-82", "MD-83", "E190", "787", "777", "767", "757", "737 MAX", "737", "A350", "A330", "A321neo",
              "A321", "A320", "A319"]
 
-# These are inaccurate, but based off of the MTOW (max take-off weight) of the 777-300ER (so at least somewhat realistic)
+# These are inaccurate, but based off of the MTOW (max take-off weight) of the 777-300ER
+# (so at least somewhat realistic).
 weights = [600000, 600000, 625000, 795000, 775000, 765000, 760000, 755000, 740000, 835000,
            820000, 822500, 822500, 825000, 800000]
 
@@ -20,128 +21,134 @@ designations = ["HEAVY", "SUPER"]
 
 iterations = 2
 
-#Populate the air with planes.
-for i in range(iterations):
-    flight = queue.Queue()
-    grounded = queue.Queue()
 
-    airPop = rand.randint(30, 60)
+def main():
+    # Populate the air with planes.
+    for i in range(iterations):
 
-    # Within that range, construct that many airplanes from the above constructor list values.
-    for a in range(airPop):
-        # Get a random integer between index 0 and the length of the airplanes list. This integer is used to populate
-        # the passenger amount and estimated weight for the airplane.
-        planeIter = rand.randint(0, len(airplanes) - 1)
-        passVal = maxPass[planeIter]
-        passengers = rand.randint(int(passVal / 2), passVal)
+        # Information pulled from the Bureau of Transportation Statistics
+        #
+        # Average Time Spent Landing to Gate: 6.9 minutes
+        #
+        # Probability of time spent at gate:
+        # .720 ~15 minutes
+        # .930 ~30 minutes
+        #
+        # Average Time Spent Gate to Takeoff: 16.7 minutes
+        #
 
-        # Calculations to determine overall weight of the plane.
-        avgPassWgt = rand.randint(100, 300)
-        avgPassLugWgt = rand.randint(20, 60)
-        weight = weights[planeIter]
-        totalWeight = weight + (passengers * avgPassWgt) + (passengers * avgPassLugWgt)
+        flights = queue.Queue()
 
-        # Instantiate the plane and populate it with values.
-        plane = airplane.Airplane()
-        plane.setAirline(rand.choice(airlines))
+        slots = 30
+        minutes = 86400
 
-        # UPS and FedEx planes will not have passengers, only packages! Keep the weight, drop the passengers.
-        if plane.getAirline() == "FedEx" or plane.getAirline() == "UPS":
-            plane.setPassengers(rand.randint(4, 9))
+        inRangeTime = rand.randint(900, 2100)
+        landTime = rand.randint(300, 600)
+        idleTime = 0
+
+        if rand.uniform(0, 1) < .720:
+            idleTime = rand.randint(450, 1349)
+        elif rand.uniform(0, 1) < .930:
+            idleTime = rand.randint(1350, 2249)
         else:
-            plane.setPassengers(passengers)
+            idleTime = rand.randint(2250, 3600)
 
-        plane.setWeight(totalWeight)
+        # Simulation with 30 slot airport. All planes in the air grounded once.
+        totalAirtime = 0
+        totalIdle = 0
+        totalPass = 0
+        totalWgt = 0
 
-        # Check if the plane is either a Boeing 700 series plane (HEAVY designation)
-        # or an Airbus plane (SUPER designation), and append to end of name if it is.
-        if planeIter >= 3 and planeIter <= 5:
-            plane.setName(airplanes[planeIter] + "-" + designations[0])
-        elif planeIter > 8 and planeIter < len(airplanes):
-            plane.setName(airplanes[planeIter] + "-" + designations[1])
-        else:
-            plane.setName(airplanes[planeIter])
+        for a in range(minutes):
+            if a % inRangeTime == 0:
+                # Get a random integer between index 0 and the length of the airplanes list.
+                # This integer is used to populate the passenger amount and estimated weight
+                # for the airplane.
+                planeIter = rand.randint(0, len(airplanes) - 1)
+                passVal = maxPass[planeIter]
+                passengers = rand.randint(int(passVal / 2), passVal)
 
-        flight.enqueue(plane)
+                # Calculations to determine overall weight of the plane.
+                avgPassWgt = rand.randint(100, 300)
+                avgPassLugWgt = rand.randint(20, 60)
+                weight = weights[planeIter]
+                totalWeight = weight + (passengers * avgPassWgt) + (passengers * avgPassLugWgt)
 
-    # Information pulled from the Bureau of Transportation Statistics
-    #
-    # Average Time Spent Landing to Gate: 6.9 minutes
-    #
-    # Probability of time spent at gate:
-    # .720 ~15 minutes
-    # .930 ~30 minutes
-    #
-    # Average Time Spent Gate to Takeoff: 16.7 minutes
-    #
+                # Instantiate the plane and populate it with values.
+                plane = airplane.Airplane()
+                plane.setAirline(rand.choice(airlines))
 
-    slots = 30
-    minutes = 86400
+                # UPS and FedEx planes will not have passengers, only packages!
+                # Keep the weight, drop the passengers.
+                if plane.getAirline() == "FedEx" or plane.getAirline() == "UPS":
+                    plane.setPassengers(rand.randint(4, 9))
+                else:
+                    plane.setPassengers(passengers)
 
-    # Simulation with 30 slot airport. All planes in the air grounded once.
-    totalAirtime = 0
-    totalIdle = 0
-    avgAirtime = 0
-    avgIdle = 0
-    totalPass = 0
-    avgPass = 0
-    totalWgt = 0
-    avgWgt = 0
+                plane.setWeight(totalWeight)
 
-    # for a in range(minutes):
-    #     for a in range(flight.size()):
-    #         cPln = flight.dequeue()
-    #         if grounded.size() < slots:
-    #             grounded.enqueue(cPln)
-    #         else:
-    #             flight.enqueue(cPln)
-    #
-    #     # Increment everyone's time spent in air by one second.
-    #     for b in range(flight.size()):
-    #         pln = flight.dequeue()
-    #         pln.setAirtime(pln.getAirtime() + 1)
-    #
-    #     # Increment everyone's time spent grounded by one second.
-    #     for c in range(grounded.size()):
-    #         gPln = grounded.dequeue()
-    #         gPln.setGroundtime(gPln.getGroundtime() + 1)
-    #
-    #     # If all planes have waited 15 minutes and the compliment probability is exceeded,
-    #     # let one plane take off.
-    #     if a % 900 == 0 and (rand.uniform(0, 1) > .38) and grounded.size() != 0:
-    #         flight.enqueue(grounded.dequeue())
-    #
-    #     # If all planes have waited 31 minutes and the compliment probability is exceeded,
-    #     # let one plane take off.
-    #     if a % 1801 == 0 and (rand.uniform(0, 1) > .07) and grounded.size() != 0:
-    #         flight.enqueue(grounded.dequeue())
+                # Check if the plane is either a Boeing 700 series plane (HEAVY designation)
+                # or an Airbus plane (SUPER designation), and append to end of name if it is.
+                if 3 < planeIter <= 5:
+                    plane.setName(airplanes[planeIter] + "-" + designations[0])
+                elif 8 < planeIter < len(airplanes):
+                    plane.setName(airplanes[planeIter] + "-" + designations[1])
+                else:
+                    plane.setName(airplanes[planeIter])
 
-    for a in range(flight.size()):
-        if flight.size() > 0:
-            pln = flight.dequeue()
+                flights.enqueue(plane)
 
-            totalAirtime += pln.getAirtime()
-            totalIdle += pln.getGroundtime()
-            totalWgt += pln.getWeight()
-            totalPass += pln.getPassengers()
 
-            flight.enqueue(pln)
+            # if a % landTime == 0:
+            #     curPlane = flights.dequeue()
+            #     print(str.expandtabs(curPlane.getAirline() + " " + curPlane.getName() + " landing."))
+            #     curPlane.setIsGrounded(True)
+            #     flights.enqueue(curPlane)
+            #
+            # if a % idleTime == 0:
+            #     for x in range(flights.size()):
+            #         curPlane = flights.dequeue()
+            #         if curPlane.getIsGrounded():
+            #             print(str.expandtabs(curPlane.getAirline() + " " + curPlane.getName() + " taking off."))
+            #             curPlane.setIsGrounded(False)
+            #         else:
+            #             flights.enqueue(curPlane)
+            #
+            # for y in range(flights.size()):
+            #     curPlane = flights.dequeue()
+            #     if curPlane.getIsGrounded():
+            #         curPlane.setGroundtime(curPlane.getGroundtime() + 1)
+            #     else:
+            #         curPlane.setAirtime(curPlane.getAirtime() + 1)
+            #
+            # for a in range(flights.size()):
+            #     if flights.size() > 0:
+            #         pln = flights.dequeue()
+            #
+            #         totalAirtime += pln.getAirtime()
+            #         totalIdle += pln.getGroundtime()
+            #         totalWgt += pln.getWeight()
+            #         totalPass += pln.getPassengers()
+            #
+            #         flights.enqueue(pln)
+            #
+            # avgAirtime = round(div(totalAirtime, flights.size()) / 60, 2)
+            # avgIdle = round(div(totalIdle, flights.size()) / 60, 2)
+            # avgWgt = round(div(totalWgt, flights.size()), 2)
+            # avgPass = round(div(totalPass, flights.size()), 2)
+            #
+            # print("Iteration " + str(i + 1) + ":\tAvg Airtime: " + str(avgAirtime) + " min\tAvg Idle: " + str(
+            #         avgIdle) + " min\tAvg Weight: " + str(avgWgt) + " lbs\tAvg Passengers: " + str(avgPass))
 
-    for a in range(grounded.size()):
-        if grounded.size() > 0:
-            pln = grounded.dequeue()
+    for a in range(flights.size()):
+        pln = flights.dequeue()
+        print(str.expandtabs("Name: " + pln.getAirline() + " " + pln.getName() + "\tTotal Weight: " + str(pln.getWeight()) + " lbs.\tTotal Passengers: " + str(pln.getPassengers()), 35))
 
-            totalAirtime += pln.getAirtime()
-            totalIdle += pln.getGroundtime()
-            totalWgt += pln.getWeight()
-            totalPass += pln.getPassengers()
+def div(dividend, divisor):
+    try:
+        return dividend / divisor
+    except ZeroDivisionError:
+        return 0
 
-            grounded.enqueue(pln)
-
-    avgAirtime = round((totalAirtime / (grounded.size() + flight.size() + 1)) / 60, 2)
-    avgIdle = round((totalIdle / (grounded.size() + flight.size() + 1)) / 60, 2)
-    avgWgt = round(totalWgt / (grounded.size() + flight.size() + 1), 2)
-    avgPass = round(totalPass / (grounded.size() + flight.size() + 1), 2)
-
-    print("Iteration " + str(i + 1) + ":\tAvg Airtime: " + str(avgAirtime) + " min\tAvg Idle: " + str(
-            avgIdle) + " min\tAvg Weight: " + str(avgWgt) + " lbs\tAvg Passengers: " + str(avgPass))
+if __name__ == '__main__':
+    main()
