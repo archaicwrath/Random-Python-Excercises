@@ -17,7 +17,6 @@ with open('data/syllables.txt', 'r') as syl:
 def genName(name):
     name = str.lower(name)
     newname = []
-    toswap = ''
 
     for i, c in enumerate(name):
         toswap = c
