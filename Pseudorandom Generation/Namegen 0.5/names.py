@@ -32,7 +32,7 @@ def genName(name):
 
 
 def main():
-    for n in range(30):
+    for n in range(10):
         origname = random.choice(surnames)
         print(str.expandtabs(origname + "\t"+ str(genName(origname)), 12))
 

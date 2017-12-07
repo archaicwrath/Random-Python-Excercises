@@ -1,5 +1,5 @@
 import random
-from Namegen.swaplist import swap
+from swaplist import *
 
 with open('data/surnames.txt', 'r') as sur:
     surnames = [line.strip() for line in sur]
