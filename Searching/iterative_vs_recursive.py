@@ -13,7 +13,7 @@ def iterativeBinarySearch(alist, item):
     last = len(alist)-1
     found = False
 
-    while first<=last and not found:
+    while first <= last and not found:
         midpoint = (first + last)//2
         if alist[midpoint] == item:
             found = True
