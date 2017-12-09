@@ -1,12 +1,13 @@
 import math
 
+
 class HashTable:
     def __init__(self, length):
         self.hash = [None for x in range(length)]
 
     def __str__(self):
-        str = ''.join([x+' ' if x is not None else 'None ' for x in self.hash])
-        return str
+        constStr = ''.join([str(x)+' ' if x is not None else 'None ' for x in self.hash])
+        return constStr
 
     def hashItem(self, item):
         if type(item) is str:
